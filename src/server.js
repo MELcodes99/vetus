@@ -77,7 +77,7 @@ export function createApp({ onTelegramUpdate, webhookSecret } = {}) {
         res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" });
         return res.end(buf);
       }
-      if (req.method === "GET" && path === "/health") return send(res, 200, { ok: true, bot: config.botUsername || null, passkeyWatcher: watchStatus });
+      if (req.method === "GET" && path === "/health") return send(res, 200, { ok: true, bot: config.botUsername || null, storage: store.info(), passkeyWatcher: watchStatus });
       if (req.method === "GET" && path === "/api/info") return send(res, 200, { bot: config.botUsername || null, model: config.servModel });
 
       // Public agent API: any AI agent can ask Vetus to vet a payment before it pays. Nothing is paid.
@@ -150,6 +150,8 @@ export function createApp({ onTelegramUpdate, webhookSecret } = {}) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   if (bootstrapKpass()) console.log("[vetus] kpass config written from environment");
   startPasskeyWatcher();
+  const info = store.info();
+  console.log(`[vetus] data file: ${info.file} (${info.exists ? `${info.households} households, ${info.decisions} decisions` : "new"})`);
   const useWebhook = config.telegramToken && config.publicUrl.startsWith("https://") && process.env.TELEGRAM_MODE !== "polling";
   const api = config.telegramToken ? telegramApi() : null;
   const bot = api ? createBot(api) : null;

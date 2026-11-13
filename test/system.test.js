@@ -270,6 +270,8 @@ test("landing page, message check API and health", async () => {
   const health = await (await fetch(`${base}/health`)).json();
   assert.equal(health.ok, true);
   assert.ok("passkeyWatcher" in health, "health shows the passkey watcher status");
+  assert.equal(health.storage.file, process.env.VETUS_DATA, "health shows where data is saved");
+  assert.ok(health.storage.households >= 1);
 });
 
 test("SERV reasoning summary is captured without markdown", async () => {

@@ -38,7 +38,9 @@ export const config = {
   // Telegram user ids allowed to switch real payments on for a household.
   admins: list(process.env.ADMIN_TELEGRAM_IDS),
 
-  dataFile: process.env.VETUS_DATA || resolve(process.cwd(), "data", "vetus.json"),
+  // Where households and decisions are saved. Uses VETUS_DATA if set; otherwise a mounted disk
+  // at /var/data if one exists (Render persistent disk); otherwise ./data for local runs.
+  dataFile: process.env.VETUS_DATA || (existsSync("/var/data") ? "/var/data/vetus.json" : resolve(process.cwd(), "data", "vetus.json")),
   // Set DRY_RUN=1 to vet everything without moving money anywhere.
   dryRun: process.env.DRY_RUN === "1",
   // Free scam checks per person per day, to protect SERV credits.

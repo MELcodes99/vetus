@@ -178,6 +178,14 @@ export const store = {
     state.checks = state.checks.filter((c) => c.householdId !== "demo");
     save();
   },
+  info() {
+    return {
+      file: config.dataFile,
+      exists: existsSync(config.dataFile),
+      households: Object.keys(state.households).length - 1, // excluding the public demo
+      decisions: state.decisions.length,
+    };
+  },
   _reset() {
     state = EMPTY();
     save();
