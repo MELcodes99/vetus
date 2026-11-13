@@ -10,7 +10,7 @@ import { isEvmAddress } from "./kite.js";
 
 const ICON = { APPROVE: "🟢", HOLD: "🟡", BLOCK: "🔴" };
 const CHECK_HEAD = { APPROVE: "🟢 This looks safe.", HOLD: "🟡 Be careful with this one.", BLOCK: "🔴 This looks like a scam." };
-const money = (n) => `$${Number(n).toFixed(Number(n) < 1 ? 3 : 2)}`;
+const money = (n) => (Number(n) < 1 ? `$${Number(n).toFixed(3)}` : Number(n).toLocaleString("en-US", { style: "currency", currency: "USD" }));
 const nameOf = (from) => [from.first_name, from.last_name].filter(Boolean).join(" ") || from.username || "Family";
 
 const COMMANDS = [
