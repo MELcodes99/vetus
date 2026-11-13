@@ -25,7 +25,7 @@ Every payment goes through three layers. **The strictest verdict wins, and the A
 
 1. **Family rules.** Trusted payees, a per-payment limit, a daily limit, holds for new payees, and instant blocks for scam payment methods (gift cards, crypto ATMs). For x402 merchants, Vetus reads the merchant's price first and blocks it if the merchant asks for more than was approved.
 2. **SERV Reasoning.** A structured check of **WHO, WHY, HOW, PRESSURE and FIT** against known scam patterns. It returns a verdict, a risk score, red flags, a short message for the elder, a note for the family, and SERV's own reasoning summary.
-3. **Kite Agent Passport.** Approved payments settle in USDC through `kpass`, either as a direct USDC transfer to a trusted wallet or as an x402 payment to a service. Kite enforces the spending allowance on chain.
+3. **Kite Agent Passport.** Approved payments settle in USDC through `kpass`: x402 payments to services come from the spending allowance, and direct USDC transfers to trusted wallets are released by the family's **Kite passkey**. Vetus then confirms the transfer on Base and sends the receipt.
 
 | Verdict | What happens |
 | --- | --- |
@@ -47,7 +47,7 @@ Vetus calls the SERV Reasoning API (`https://inference-api.openserv.ai/v1`) with
 ## How it uses Kite
 
 - Vetus is registered as an agent on Kite Agent Passport (`kpass agent:register --type vetus`).
-- **Trusted wallets:** `kpass wallet send --chain base --to <wallet> --amount <n> --asset USDC`.
+- **Trusted wallets:** `kpass wallet send --chain base --to <wallet> --amount <n> --asset USDC`. Kite requires the wallet owner's passkey for each transfer, so the family's final OK is cryptographic: Vetus sends a "Confirm with passkey" button, then watches Base for the USDC transfer (exact amount, exact payee, never reusing a transaction) and marks the payment paid with a Basescan receipt.
 - **x402 services:** `kpass session execute --url <service> ...`, paid from the account allowance, with the decision id as the idempotency key so a payment can never be sent twice.
 - Kite enforces the ceiling (the allowance). Vetus decides whether a payment should happen at all, which the allowance alone cannot do. In our setup the allowance permitted a single payment up to its full $3; Vetus is what stops a scam from using that headroom.
 
@@ -99,7 +99,7 @@ Every household starts with live payments off: Vetus still vets everything, but 
 npm test
 ```
 
-33 tests, including a full end-to-end run through the Telegram bot against fake SERV, fake `kpass` and fake Telegram: family setup and invite, elder joins, scam message check, family-only payee management, payments held until switched on, admin-only switch-on, real USDC send arguments, hold then approve paid exactly once, strangers can't approve, scam payments never reach `kpass`, decline, private dashboards, a demo that never moves money, the agent API, webhook secret checks, the chat-completions fallback, and rate limits.
+34 tests, including a full end-to-end run through the Telegram bot against fake SERV, fake `kpass` and fake Telegram: family setup and invite, elder joins, scam message check, family-only payee management, payments held until switched on, admin-only switch-on, real USDC send arguments, passkey approval confirmed on chain (and expiry when it isn't), hold then approve paid exactly once, strangers can't approve, scam payments never reach `kpass`, decline, private dashboards, a demo that never moves money, the agent API, webhook secret checks, the chat-completions fallback, and rate limits.
 
 ## Project layout
 
@@ -121,7 +121,8 @@ No runtime dependencies.
 
 Real payments made through Vetus during the hackathon (USDC on Base via Kite Agent Passport):
 
-- First Kite payment test: [0xac5b0aad…](https://basescan.org/tx/0xac5b0aadc55fdb4193c878b57c59c1694222b6f45239b40b137fdbc5c3f27f77)
+- **Full Vetus flow, live on Telegram:** Rose's payment to a trusted carer was vetted by the family rules and SERV Reasoning, released by the family's Kite passkey, and confirmed on Base by Vetus: [0x8f7e3a5b…](https://basescan.org/tx/0x8f7e3a5baf59b72956ef6c0951c5b001a83c43ee2c003b1ff903c49b1b35f854)
+- First x402 payment through Kite Agent Passport: [0xac5b0aad…](https://basescan.org/tx/0xac5b0aadc55fdb4193c878b57c59c1694222b6f45239b40b137fdbc5c3f27f77)
 
 ## Business model
 
