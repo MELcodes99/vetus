@@ -131,6 +131,23 @@ test("a normal payment to a trusted wallet sends real USDC through kpass", async
   assert.match(tg.last(ELDER).text, /✅ Done/);
 });
 
+test("a wallet transfer that needs Kite passkey approval goes to the family with a passkey button", async () => {
+  const { writeFileSync, rmSync } = await import("node:fs");
+  const flag = join(dir, "passkey-mode");
+  writeFileSync(flag, "1");
+  try {
+    tg.clear();
+    const d = await elderPays("carer-ana", 0.01, "Weekly help");
+    assert.equal(d.status, "awaiting_passkey");
+    assert.equal(d.approvalUrl, "https://agentpassport.ai/wallet/send/approve?token=wsr_test");
+    const msg = tg.to(FAMILY).find((m) => m.text.startsWith("🔐"));
+    assert.ok(buttonsOf(msg).some((b) => b.url === d.approvalUrl), "family gets a passkey button");
+    assert.match(tg.last(ELDER).text, /final OK/);
+  } finally {
+    rmSync(flag);
+  }
+});
+
 test("over the limit: held, family taps Approve, paid exactly once", async () => {
   tg.clear();
   const d = await elderPays("carer-ana", 0.08, "Extra hours this week");

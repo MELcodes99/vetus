@@ -133,6 +133,11 @@ export async function settle(id, approvedBy) {
 
   store.updateDecision(id, { status: "paying", approvedBy });
   const result = await pay({ payee, amount: d.request.amount, idempotencyKey: `vetus-${id}` });
+  if (result.needsApproval) {
+    const out = store.updateDecision(id, { status: "awaiting_passkey", approvalUrl: result.approvalUrl, passkeyRequestId: result.requestId });
+    emit("awaiting_passkey", out);
+    return out;
+  }
   if (!result.ok) {
     const out = store.updateDecision(id, { status: "failed", payError: result.error });
     emit("failed", out);

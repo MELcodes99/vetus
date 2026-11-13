@@ -70,6 +70,10 @@ export async function sendUsdc({ payee, amount }) {
   const chain = payee.chain || config.walletChain;
   const r = await kpass(["wallet", "send", "--chain", chain, "--to", payee.address, "--amount", String(amount), "--asset", "USDC"]);
   const o = r.out || {};
+  // Kite requires the wallet owner's passkey for direct transfers. kpass returns an approval link;
+  // the family approves with their passkey and only then does money move.
+  const approvalUrl = (`${r.stdout} ${r.stderr}`.match(/https:\/\/[^\s"']*approve[^\s"']*/) || [])[0];
+  if (approvalUrl) return { ok: false, needsApproval: true, approvalUrl, requestId: o.request_id || o.id || null };
   const okStatus = ["success", "submitted", "confirmed", "completed"].includes(String(o.status || "").toLowerCase());
   if (!okStatus) return failure(r);
   // kpass's field names for the transaction differ by chain; find the first hash-like value.

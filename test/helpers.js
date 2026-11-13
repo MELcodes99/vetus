@@ -52,7 +52,10 @@ export function makeFakeKpass() {
   writeFileSync(path, `#!/usr/bin/env node
 const args = process.argv.slice(2);
 require("fs").appendFileSync(${JSON.stringify(kpassLog)}, JSON.stringify(args) + "\\n");
-if (args[0] === "wallet" && args[1] === "send") {
+if (args[0] === "wallet" && args[1] === "send" && require("fs").existsSync(${JSON.stringify(join(dir, "passkey-mode"))})) {
+  console.log(JSON.stringify({ status: "approval_required", request_id: "wsr_test",
+    hint: "Wallet send needs passkey approval. Show this approval URL to the user verbatim: https://agentpassport.ai/wallet/send/approve?token=wsr_test" }));
+} else if (args[0] === "wallet" && args[1] === "send") {
   console.log(JSON.stringify({ status: "success", chain: "base", transaction: "0x" + "b".repeat(64) }));
 } else {
   console.log(JSON.stringify({ status: "success", payment: { amount: "10000", network: "eip155:8453",

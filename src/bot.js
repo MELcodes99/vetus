@@ -77,6 +77,12 @@ export function createBot(api) {
       await tellFamily(h, `${msg}\nHousehold code: ${h.code}`);
       return tellElders(h, msg);
     }
+    if (event === "awaiting_passkey") {
+      await tellFamily(h, `🔐 Vetus checked and approved ${what}${risk}.\n\n${d.familyMessage}\n\nLast step: confirm the transfer with your Kite passkey. The money only moves after you approve it there.`, {
+        reply_markup: { inline_keyboard: [[{ text: "🔐 Confirm with passkey", url: d.approvalUrl }], ...traceButton] },
+      });
+      return tellElders(h, `🟢 That payment looks fine. Your family is giving the final OK now.`);
+    }
     if (event === "denied") {
       await tellFamily(h, `✖️ Declined: ${what}. Nothing was sent.`);
       return tellElders(h, `Your family decided not to send ${what}. Nothing was sent.`);
