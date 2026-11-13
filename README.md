@@ -87,7 +87,7 @@ Run it from the folder where you ran `kpass login`. Locally the bot uses long po
 
 ### Deploy (Render or any Docker host)
 
-The `Dockerfile` installs `kpass`. Set these environment variables: `SERV_API_KEY`, `TELEGRAM_BOT_TOKEN`, `ADMIN_TELEGRAM_IDS`, `PUBLIC_URL` (your https address), and `KPASS_CONFIG_B64` / `KPASS_AGENT_B64` (base64 of `.kite-passport/config.json` and `agent.json`, so the server can pay without a browser login). Point `VETUS_DATA` at a persistent disk for production.
+The `Dockerfile` installs `kpass`. Set these environment variables: `SERV_API_KEY`, `TELEGRAM_BOT_TOKEN`, `ADMIN_TELEGRAM_IDS`, `PUBLIC_URL` (your https address), and `KPASS_CONFIG_B64` / `KPASS_AGENT_B64` / `KPASS_SESSIONS_B64` (base64 of `~/.kite-passport/config.json`, `agent.json` and `sessions.json`, so the server can pay without a browser login). Point `VETUS_DATA` at a persistent disk for production.
 
 ### Live payments are opt-in
 

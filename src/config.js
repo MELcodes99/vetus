@@ -1,5 +1,6 @@
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve, join } from "node:path";
+import { homedir } from "node:os";
 
 // Minimal .env loader so the project has zero dependencies.
 const envPath = resolve(process.cwd(), ".env");
@@ -42,16 +43,23 @@ export const config = {
   dailyCheckLimit: Number(process.env.DAILY_CHECK_LIMIT || 30),
 };
 
-// On a server there is no browser for `kpass login`. Supply the saved kpass config
-// (base64 of .kite-passport/config.json and agent.json) through environment variables instead.
+// On a server there is no browser for `kpass login`. Supply the saved kpass files
+// (base64 of ~/.kite-passport/config.json, agent.json and sessions.json) through environment variables.
+// They are written both to the home folder and the project folder, since kpass reads either.
 export function bootstrapKpass() {
-  const dir = join(config.kpassDir, ".kite-passport");
-  const files = { "config.json": process.env.KPASS_CONFIG_B64, "agent.json": process.env.KPASS_AGENT_B64 };
+  const files = {
+    "config.json": process.env.KPASS_CONFIG_B64,
+    "agent.json": process.env.KPASS_AGENT_B64,
+    "sessions.json": process.env.KPASS_SESSIONS_B64,
+  };
+  const dirs = [...new Set([join(homedir(), ".kite-passport"), join(config.kpassDir, ".kite-passport")])];
   let wrote = 0;
   for (const [name, b64] of Object.entries(files)) {
     if (!b64) continue;
-    mkdirSync(dir, { recursive: true, mode: 0o700 });
-    writeFileSync(join(dir, name), Buffer.from(b64, "base64"), { mode: 0o600 });
+    for (const dir of dirs) {
+      mkdirSync(dir, { recursive: true, mode: 0o700 });
+      writeFileSync(join(dir, name), Buffer.from(b64.trim(), "base64"), { mode: 0o600 });
+    }
     wrote++;
   }
   return wrote;
