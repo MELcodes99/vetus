@@ -5,7 +5,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config, bootstrapKpass } from "./config.js";
 import { store } from "./store.js";
-import { handlePaymentRequest, checkMessage, familyDecide, liveMode, startPasskeyWatcher } from "./vet.js";
+import { handlePaymentRequest, checkMessage, familyDecide, liveMode, startPasskeyWatcher, watchStatus } from "./vet.js";
 import { runRules, stricter } from "./rules.js";
 import { servVet } from "./serv.js";
 import { telegramApi, poll } from "./telegram.js";
@@ -77,7 +77,7 @@ export function createApp({ onTelegramUpdate, webhookSecret } = {}) {
         res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" });
         return res.end(buf);
       }
-      if (req.method === "GET" && path === "/health") return send(res, 200, { ok: true, bot: config.botUsername || null });
+      if (req.method === "GET" && path === "/health") return send(res, 200, { ok: true, bot: config.botUsername || null, passkeyWatcher: watchStatus });
       if (req.method === "GET" && path === "/api/info") return send(res, 200, { bot: config.botUsername || null, model: config.servModel });
 
       // Public agent API: any AI agent can ask Vetus to vet a payment before it pays. Nothing is paid.

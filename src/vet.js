@@ -2,7 +2,8 @@ import { randomUUID } from "node:crypto";
 import { store } from "./store.js";
 import { runRules, stricter } from "./rules.js";
 import { servVet, servCheck } from "./serv.js";
-import { quote, pay, explorerUrl, findUsdcTransfer } from "./kite.js";
+import { quote, pay, explorerUrl, findUsdcTransfer, watchStatus } from "./kite.js";
+export { watchStatus };
 import { config } from "./config.js";
 
 // Listeners (the Telegram bot) get told when a decision changes, so families hear about it instantly.
@@ -179,6 +180,8 @@ export async function familyDecide(id, action, who = "family") {
 const WATCH_FOR_MS = 30 * 60 * 1000;
 export async function checkPasskeyPayments(now = Date.now()) {
   const waiting = store.allDecisions().filter((d) => d.status === "awaiting_passkey");
+  watchStatus.lastRunAt = new Date(now).toISOString();
+  watchStatus.waiting = waiting.length;
   for (const d of waiting) {
     const household = store.household(d.householdId);
     const payee = household && d.request.payeeId ? store.payee(household, d.request.payeeId) : null;
@@ -186,12 +189,15 @@ export async function checkPasskeyPayments(now = Date.now()) {
     try {
       const used = store.allDecisions().map((x) => x.tx).filter(Boolean);
       const hit = await findUsdcTransfer({ to: payee.address, amount: d.request.amount, fromBlock: d.watchFromBlock, exclude: used });
+      watchStatus.lastError = null;
       if (hit) {
+        watchStatus.found++;
         const out = store.updateDecision(d.id, { status: "paid", paidAmount: d.request.amount, tx: hit.tx, network: "eip155:8453", txUrl: explorerUrl("eip155:8453", hit.tx), approvedBy: d.approvedBy && d.approvedBy !== "vetus" ? d.approvedBy : "family passkey" });
         emit("paid", out);
         continue;
       }
     } catch (e) {
+      watchStatus.lastError = e.message.slice(0, 500);
       console.error("[vetus] passkey watch:", e.message);
     }
     if (now - Date.parse(d.watchSince || d.updatedAt || d.createdAt) > WATCH_FOR_MS) {

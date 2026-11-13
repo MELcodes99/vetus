@@ -267,7 +267,9 @@ test("landing page, message check API and health", async () => {
   const c = await (await fetch(`${base}/api/check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: "Pay at a bitcoin ATM now" }) })).json();
   assert.equal(c.verdict, "BLOCK");
   assert.equal((await fetch(`${base}/api/check`, { method: "POST", body: "{}" })).status, 400);
-  assert.equal((await (await fetch(`${base}/health`)).json()).ok, true);
+  const health = await (await fetch(`${base}/health`)).json();
+  assert.equal(health.ok, true);
+  assert.ok("passkeyWatcher" in health, "health shows the passkey watcher status");
 });
 
 test("SERV reasoning summary is captured without markdown", async () => {

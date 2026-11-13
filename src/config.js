@@ -29,7 +29,8 @@ export const config = {
   kpassBin: process.env.KPASS_BIN || "kpass",
   kpassDir: process.env.KPASS_DIR || process.cwd(),
   walletChain: process.env.WALLET_CHAIN || "base",
-  baseRpcUrl: process.env.BASE_RPC_URL || "https://mainnet.base.org",
+  // Tried in order; public endpoints limit log searches, so Vetus falls back between them.
+  baseRpcUrls: list(process.env.BASE_RPC_URL || "https://mainnet.base.org,https://base-rpc.publicnode.com,https://base.llamarpc.com"),
 
   telegramToken: process.env.TELEGRAM_BOT_TOKEN || "",
   telegramApi: process.env.TELEGRAM_API || "https://api.telegram.org",

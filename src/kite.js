@@ -111,16 +111,33 @@ export const isEvmAddress = (a) => /^0x[a-fA-F0-9]{40}$/.test(String(a || ""));
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
-async function rpc(method, params) {
-  const res = await fetch(config.baseRpcUrl, {
+export const watchStatus = { lastRunAt: null, lastError: null, lastRpc: null, lastRange: null, found: 0 };
+
+async function rpcAt(url, method, params) {
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
     signal: AbortSignal.timeout(15_000),
   });
-  const json = await res.json();
-  if (json.error) throw new Error(`Base RPC: ${json.error.message}`);
+  const json = await res.json().catch(() => ({ error: { message: `HTTP ${res.status}` } }));
+  if (json.error) throw new Error(`${new URL(url).host}: ${json.error.message || JSON.stringify(json.error)}`);
   return json.result;
+}
+
+// Try each configured Base RPC in turn until one answers.
+async function rpc(method, params) {
+  const errors = [];
+  for (const url of config.baseRpcUrls) {
+    try {
+      const out = await rpcAt(url, method, params);
+      watchStatus.lastRpc = new URL(url).host;
+      return out;
+    } catch (e) {
+      errors.push(e.message);
+    }
+  }
+  throw new Error(errors.join(" | "));
 }
 
 export async function baseBlockNumber() {
@@ -128,17 +145,24 @@ export async function baseBlockNumber() {
 }
 
 // Find a USDC transfer of exactly `amount` to `to` since `fromBlock`. Skips hashes already used.
+// Searches in small windows, newest first, because public RPCs cap the block range per query.
+const CHUNK = 500;
 export async function findUsdcTransfer({ to, amount, fromBlock, exclude = [] }) {
   const latest = await baseBlockNumber();
-  const start = Math.max(fromBlock ?? latest - 3000, latest - 9000);
+  const start = Math.max(fromBlock ? fromBlock - 5 : latest - 3000, latest - 6000);
   const topicTo = "0x" + to.toLowerCase().replace(/^0x/, "").padStart(64, "0");
-  const logs = await rpc("eth_getLogs", [{
-    address: USDC_BASE,
-    fromBlock: "0x" + start.toString(16),
-    toBlock: "0x" + latest.toString(16),
-    topics: [TRANSFER_TOPIC, null, topicTo],
-  }]);
   const want = BigInt(Math.round(Number(amount) * 1e6));
-  const hit = (logs || []).find((l) => BigInt(l.data) === want && !exclude.includes(l.transactionHash));
-  return hit ? { tx: hit.transactionHash, block: parseInt(hit.blockNumber, 16) } : null;
+  watchStatus.lastRange = [start, latest];
+  for (let hi = latest; hi >= start; hi -= CHUNK) {
+    const lo = Math.max(start, hi - CHUNK + 1);
+    const logs = await rpc("eth_getLogs", [{
+      address: USDC_BASE,
+      fromBlock: "0x" + lo.toString(16),
+      toBlock: "0x" + hi.toString(16),
+      topics: [TRANSFER_TOPIC, null, topicTo],
+    }]);
+    const hit = (logs || []).find((l) => BigInt(l.data) === want && !exclude.includes(l.transactionHash));
+    if (hit) return { tx: hit.transactionHash, block: parseInt(hit.blockNumber, 16) };
+  }
+  return null;
 }
