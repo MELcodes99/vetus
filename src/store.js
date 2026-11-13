@@ -126,6 +126,7 @@ export const store = {
 
   // Decisions
   decisions: (householdId) => state.decisions.filter((d) => d.householdId === householdId),
+  allDecisions: () => state.decisions,
   decision: (id) => state.decisions.find((d) => d.id === id) || null,
   addDecision(d) {
     state.decisions.unshift(d);

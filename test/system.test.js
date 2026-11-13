@@ -3,15 +3,17 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { dir, startFakeServ, makeFakeKpass, kpassCalls, fakeTelegram, wait } from "./helpers.js";
+import { dir, startFakeServ, startFakeBase, makeFakeKpass, kpassCalls, fakeTelegram, wait } from "./helpers.js";
 
 const FAMILY = 111, ELDER = 222, STRANGER = 333, ADMIN = 999;
 const WALLET = "0x" + "c".repeat(40);
-let serv, http, base, store, bot, tg;
+let serv, chain, http, base, store, bot, tg, vet;
 
 before(async () => {
   serv = await startFakeServ();
+  chain = await startFakeBase();
   Object.assign(process.env, {
+    BASE_RPC_URL: chain.url,
     SERV_API_KEY: "test-key",
     SERV_BASE_URL: serv.url,
     KPASS_BIN: makeFakeKpass(),
@@ -22,6 +24,7 @@ before(async () => {
     DRY_RUN: "0",
   });
   ({ store } = await import("../src/store.js"));
+  vet = await import("../src/vet.js");
   const { createBot } = await import("../src/bot.js");
   const { createApp } = await import("../src/server.js");
   tg = fakeTelegram();
@@ -32,7 +35,7 @@ before(async () => {
   base = `http://127.0.0.1:${http.address().port}`;
 });
 
-after(() => { http?.close(); serv?.server.close(); });
+after(() => { http?.close(); serv?.server.close(); chain?.server.close(); });
 
 // Helpers to talk to the bot like a person would.
 const user = (id, first) => ({ id, first_name: first });
@@ -143,6 +146,39 @@ test("a wallet transfer that needs Kite passkey approval goes to the family with
     const msg = tg.to(FAMILY).find((m) => m.text.startsWith("🔐"));
     assert.ok(buttonsOf(msg).some((b) => b.url === d.approvalUrl), "family gets a passkey button");
     assert.match(tg.last(ELDER).text, /final OK/);
+    assert.equal(d.watchFromBlock, 0x1000, "remembers the block to watch from");
+
+    // Nothing on chain yet: still waiting.
+    await vet.checkPasskeyPayments();
+    assert.equal(store.decision(d.id).status, "awaiting_passkey");
+
+    // The family approves with their passkey; Kite sends USDC; Vetus sees it on Base.
+    const tx = "0x" + "d".repeat(64);
+    chain.state.logs = [
+      { transactionHash: "0x" + "e".repeat(64), data: "0x" + (20000).toString(16).padStart(64, "0"), blockNumber: "0x1001" }, // wrong amount
+      { transactionHash: tx, data: "0x" + (10000).toString(16).padStart(64, "0"), blockNumber: "0x1002" },
+    ];
+    tg.clear();
+    await vet.checkPasskeyPayments();
+    const paid = store.decision(d.id);
+    assert.equal(paid.status, "paid");
+    assert.equal(paid.tx, tx);
+    assert.equal(paid.txUrl, `https://basescan.org/tx/${tx}`);
+    const q = chain.state.calls.filter((c) => c.method === "eth_getLogs").at(-1).params[0];
+    assert.equal(q.topics[2], "0x" + WALLET.slice(2).padStart(64, "0"), "filters on the payee address");
+    assert.match(tg.last(FAMILY).text, /✅ Paid \$0\.010 to Carer Ana.*basescan/);
+
+    // The same on-chain transfer can never confirm a second payment.
+    const d2 = await elderPays("carer-ana", 0.01, "Weekly help again");
+    await vet.checkPasskeyPayments();
+    assert.equal(store.decision(d2.id).status, "awaiting_passkey");
+
+    // If nothing arrives within 30 minutes, it expires and both sides are told.
+    tg.clear();
+    await vet.checkPasskeyPayments(Date.now() + 31 * 60 * 1000);
+    assert.equal(store.decision(d2.id).status, "passkey_expired");
+    assert.match(tg.last(FAMILY).text, /expired/);
+    chain.state.logs = [];
   } finally {
     rmSync(flag);
   }

@@ -90,3 +90,21 @@ export function fakeTelegram() {
 }
 
 export const wait = (ms = 30) => new Promise((r) => setTimeout(r, ms));
+
+// Fake Base JSON-RPC: block number and USDC Transfer logs you can set from a test.
+export async function startFakeBase() {
+  const state = { logs: [], calls: [] };
+  const server = createServer((req, res) => {
+    let b = "";
+    req.on("data", (c) => (b += c));
+    req.on("end", () => {
+      const { method, params } = JSON.parse(b);
+      state.calls.push({ method, params });
+      res.writeHead(200, { "Content-Type": "application/json" });
+      const result = method === "eth_blockNumber" ? "0x1000" : method === "eth_getLogs" ? state.logs : null;
+      res.end(JSON.stringify({ jsonrpc: "2.0", id: 1, result }));
+    });
+  });
+  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  return { server, state, url: `http://127.0.0.1:${server.address().port}` };
+}

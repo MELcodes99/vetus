@@ -5,7 +5,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config, bootstrapKpass } from "./config.js";
 import { store } from "./store.js";
-import { handlePaymentRequest, checkMessage, familyDecide, liveMode } from "./vet.js";
+import { handlePaymentRequest, checkMessage, familyDecide, liveMode, startPasskeyWatcher } from "./vet.js";
 import { runRules, stricter } from "./rules.js";
 import { servVet } from "./serv.js";
 import { telegramApi, poll } from "./telegram.js";
@@ -149,6 +149,7 @@ export function createApp({ onTelegramUpdate, webhookSecret } = {}) {
 // Start everything when run directly (npm start).
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   if (bootstrapKpass()) console.log("[vetus] kpass config written from environment");
+  startPasskeyWatcher();
   const useWebhook = config.telegramToken && config.publicUrl.startsWith("https://") && process.env.TELEGRAM_MODE !== "polling";
   const api = config.telegramToken ? telegramApi() : null;
   const bot = api ? createBot(api) : null;

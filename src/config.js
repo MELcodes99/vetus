@@ -29,6 +29,7 @@ export const config = {
   kpassBin: process.env.KPASS_BIN || "kpass",
   kpassDir: process.env.KPASS_DIR || process.cwd(),
   walletChain: process.env.WALLET_CHAIN || "base",
+  baseRpcUrl: process.env.BASE_RPC_URL || "https://mainnet.base.org",
 
   telegramToken: process.env.TELEGRAM_BOT_TOKEN || "",
   telegramApi: process.env.TELEGRAM_API || "https://api.telegram.org",

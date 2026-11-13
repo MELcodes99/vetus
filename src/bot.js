@@ -83,6 +83,10 @@ export function createBot(api) {
       });
       return tellElders(h, `🟢 That payment looks fine. Your family is giving the final OK now.`);
     }
+    if (event === "passkey_expired") {
+      await tellFamily(h, `⌛ The passkey link for ${what} expired and no transfer was seen on chain, so nothing was sent. Ask ${h.elderName} to try again with /pay if it's still needed.`);
+      return tellElders(h, `That payment wasn't completed, so nothing was sent. You can try again with /pay.`);
+    }
     if (event === "denied") {
       await tellFamily(h, `✖️ Declined: ${what}. Nothing was sent.`);
       return tellElders(h, `Your family decided not to send ${what}. Nothing was sent.`);

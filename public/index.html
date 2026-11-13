@@ -191,6 +191,7 @@ const STATUS = {
   awaiting_family: () => "Waiting for you to approve or decline.",
   approving: () => "Approved, paying now…",
   awaiting_passkey: (d) => `Checked and approved. Waiting for the family's Kite passkey to release the money.${d.approvalUrl ? ` <a href="${esc(d.approvalUrl)}" target="_blank" rel="noopener">Confirm with passkey</a>` : ""}`,
+  passkey_expired: () => "The passkey link expired and no transfer was seen on chain, so nothing was sent.",
   approved_not_sent: () => "Approved, but live payments aren't switched on for this household yet, so nothing was sent.",
   blocked: () => "Nothing was sent.",
   denied: () => "You declined it. Nothing was sent.",

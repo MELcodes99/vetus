@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { store } from "./store.js";
 import { runRules, stricter } from "./rules.js";
 import { servVet, servCheck } from "./serv.js";
-import { quote, pay, explorerUrl } from "./kite.js";
+import { quote, pay, explorerUrl, findUsdcTransfer } from "./kite.js";
 import { config } from "./config.js";
 
 // Listeners (the Telegram bot) get told when a decision changes, so families hear about it instantly.
@@ -134,7 +134,13 @@ export async function settle(id, approvedBy) {
   store.updateDecision(id, { status: "paying", approvedBy });
   const result = await pay({ payee, amount: d.request.amount, idempotencyKey: `vetus-${id}` });
   if (result.needsApproval) {
-    const out = store.updateDecision(id, { status: "awaiting_passkey", approvalUrl: result.approvalUrl, passkeyRequestId: result.requestId });
+    const out = store.updateDecision(id, {
+      status: "awaiting_passkey",
+      approvalUrl: result.approvalUrl,
+      passkeyRequestId: result.requestId,
+      watchFromBlock: result.fromBlock,
+      watchSince: new Date().toISOString(),
+    });
     emit("awaiting_passkey", out);
     return out;
   }
@@ -167,4 +173,41 @@ export async function familyDecide(id, action, who = "family") {
   }
   store.updateDecision(id, { status: "approving" }); // claims it, so a double tap cannot pay twice
   return settle(id, who);
+}
+
+// Watch Base for transfers the family released with their passkey, and mark them paid with the receipt.
+const WATCH_FOR_MS = 30 * 60 * 1000;
+export async function checkPasskeyPayments(now = Date.now()) {
+  const waiting = store.allDecisions().filter((d) => d.status === "awaiting_passkey");
+  for (const d of waiting) {
+    const household = store.household(d.householdId);
+    const payee = household && d.request.payeeId ? store.payee(household, d.request.payeeId) : null;
+    if (!payee?.address || (payee.chain || config.walletChain) !== "base") continue;
+    try {
+      const used = store.allDecisions().map((x) => x.tx).filter(Boolean);
+      const hit = await findUsdcTransfer({ to: payee.address, amount: d.request.amount, fromBlock: d.watchFromBlock, exclude: used });
+      if (hit) {
+        const out = store.updateDecision(d.id, { status: "paid", paidAmount: d.request.amount, tx: hit.tx, network: "eip155:8453", txUrl: explorerUrl("eip155:8453", hit.tx), approvedBy: d.approvedBy && d.approvedBy !== "vetus" ? d.approvedBy : "family passkey" });
+        emit("paid", out);
+        continue;
+      }
+    } catch (e) {
+      console.error("[vetus] passkey watch:", e.message);
+    }
+    if (now - Date.parse(d.watchSince || d.updatedAt || d.createdAt) > WATCH_FOR_MS) {
+      const out = store.updateDecision(d.id, { status: "passkey_expired" });
+      emit("passkey_expired", out);
+    }
+  }
+}
+
+export function startPasskeyWatcher(intervalMs = 15_000) {
+  let running = false;
+  const timer = setInterval(async () => {
+    if (running) return; // never overlap two checks
+    running = true;
+    try { await checkPasskeyPayments(); } catch { /* logged inside */ } finally { running = false; }
+  }, intervalMs);
+  timer.unref?.();
+  return timer;
 }

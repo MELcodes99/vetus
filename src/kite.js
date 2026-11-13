@@ -73,7 +73,10 @@ export async function sendUsdc({ payee, amount }) {
   // Kite requires the wallet owner's passkey for direct transfers. kpass returns an approval link;
   // the family approves with their passkey and only then does money move.
   const approvalUrl = (`${r.stdout} ${r.stderr}`.match(/https:\/\/[^\s"']*approve[^\s"']*/) || [])[0];
-  if (approvalUrl) return { ok: false, needsApproval: true, approvalUrl, requestId: o.request_id || o.id || null };
+  if (approvalUrl) {
+    const fromBlock = chain === "base" ? await baseBlockNumber().catch(() => null) : null;
+    return { ok: false, needsApproval: true, approvalUrl, requestId: o.request_id || o.id || null, fromBlock };
+  }
   const okStatus = ["success", "submitted", "confirmed", "completed"].includes(String(o.status || "").toLowerCase());
   if (!okStatus) return failure(r);
   // kpass's field names for the transaction differ by chain; find the first hash-like value.
@@ -100,3 +103,42 @@ export function explorerUrl(network, tx) {
 }
 
 export const isEvmAddress = (a) => /^0x[a-fA-F0-9]{40}$/.test(String(a || ""));
+
+// ---- On-chain confirmation for passkey-approved transfers ----
+// After the family approves with their passkey, Kite sends the USDC. Vetus confirms it by finding
+// the USDC Transfer event to the payee on Base, so "paid" is backed by the chain, not by a button.
+
+const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
+async function rpc(method, params) {
+  const res = await fetch(config.baseRpcUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+    signal: AbortSignal.timeout(15_000),
+  });
+  const json = await res.json();
+  if (json.error) throw new Error(`Base RPC: ${json.error.message}`);
+  return json.result;
+}
+
+export async function baseBlockNumber() {
+  return parseInt(await rpc("eth_blockNumber", []), 16);
+}
+
+// Find a USDC transfer of exactly `amount` to `to` since `fromBlock`. Skips hashes already used.
+export async function findUsdcTransfer({ to, amount, fromBlock, exclude = [] }) {
+  const latest = await baseBlockNumber();
+  const start = Math.max(fromBlock ?? latest - 3000, latest - 9000);
+  const topicTo = "0x" + to.toLowerCase().replace(/^0x/, "").padStart(64, "0");
+  const logs = await rpc("eth_getLogs", [{
+    address: USDC_BASE,
+    fromBlock: "0x" + start.toString(16),
+    toBlock: "0x" + latest.toString(16),
+    topics: [TRANSFER_TOPIC, null, topicTo],
+  }]);
+  const want = BigInt(Math.round(Number(amount) * 1e6));
+  const hit = (logs || []).find((l) => BigInt(l.data) === want && !exclude.includes(l.transactionHash));
+  return hit ? { tx: hit.transactionHash, block: parseInt(hit.blockNumber, 16) } : null;
+}
