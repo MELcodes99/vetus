@@ -3,150 +3,312 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Vetus · vets every payment before Grandma sends it</title>
-<meta name="description" content="Vetus checks payments and messages for scams before older adults lose money. Built on SERV Reasoning and Kite Agent Passport." />
+<title>Vetus · vets every payment before grandparents send it</title>
+<meta name="description" content="Vetus checks payments and messages for scams before older adults lose money. Families approve anything unusual from Telegram." />
+<meta property="og:title" content="Vetus · vets every payment before grandparents send it" />
+<meta property="og:image" content="/img/logo-512.png" />
+<link rel="icon" href="/img/logo-64.png" />
+<link rel="apple-touch-icon" href="/img/logo-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #f6f3ee; --card: #fffdf9; --ink: #1d1b18; --muted: #6f6a62; --line: #e6e0d6;
-    --ok: #1f7a4d; --ok-bg: #e5f3ea; --hold: #a66a00; --hold-bg: #fbf0d9; --block: #b42318; --block-bg: #fbe4e1;
-    --accent: #2f3b8f;
+    --blue: #5572fc;
+    --blue-deep: #3149d6;
+    --navy: #121a47;
+    --mist: #eef1ff;
+    --line: #d9e0ff;
+    --white: #ffffff;
+    --muted: #4a5384;
+    --safe: #0e8a5f; --safe-bg: #e3f6ee;
+    --held: #a35f00; --held-bg: #fff2d9;
+    --blocked: #c62f2f; --blocked-bg: #fde6e6;
+    --display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+    --body: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
-  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
-  nav { display: flex; align-items: center; gap: 18px; padding: 22px 0; }
-  nav .logo { font: 600 26px/1 Georgia, "Times New Roman", serif; letter-spacing: -0.5px; }
-  nav .spacer { flex: 1; }
-  nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
-  .hero { padding: 56px 0 40px; }
-  .hero h1 { font: 600 clamp(36px, 6vw, 60px)/1.05 Georgia, "Times New Roman", serif; letter-spacing: -1.5px; margin: 0 0 18px; max-width: 760px; }
-  .hero p { font-size: 19px; color: var(--muted); max-width: 640px; margin: 0 0 28px; }
-  .cta { display: flex; gap: 12px; flex-wrap: wrap; }
-  .btn { display: inline-block; padding: 13px 22px; border-radius: 12px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: #fff; }
-  .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
-  section { padding: 40px 0; border-top: 1px solid var(--line); }
-  h2 { font: 600 28px/1.2 Georgia, "Times New Roman", serif; margin: 0 0 18px; }
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
-  .steps .card b { display: block; font-size: 17px; margin-bottom: 6px; }
-  .steps .card span { color: var(--muted); font-size: 15px; }
-  .n { font: 600 14px/1 ui-monospace, monospace; color: var(--accent); margin-bottom: 10px; display: block; }
-  textarea { width: 100%; min-height: 110px; font: inherit; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: #fff; resize: vertical; }
-  .try-row { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-  .try-row button { font: inherit; font-weight: 600; padding: 11px 18px; border-radius: 10px; border: 0; background: var(--ink); color: #fff; cursor: pointer; }
-  .try-row .ex { background: #fff; color: var(--ink); border: 1px solid var(--line); font-weight: 500; }
-  .result { margin-top: 14px; display: none; }
-  .verdict { font-weight: 700; font-size: 12px; letter-spacing: .8px; padding: 4px 10px; border-radius: 99px; }
-  .APPROVE { color: var(--ok); background: var(--ok-bg); } .HOLD { color: var(--hold); background: var(--hold-bg); } .BLOCK { color: var(--block); background: var(--block-bg); }
-  .flags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-  .flag { font-size: 12px; background: var(--block-bg); color: var(--block); padding: 2px 8px; border-radius: 6px; }
-  pre { background: #1d1b18; color: #f6f3ee; padding: 16px; border-radius: 12px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
-  .layers { display: grid; gap: 10px; }
-  .layer { display: flex; gap: 14px; align-items: baseline; }
-  .layer b { min-width: 150px; }
-  footer { padding: 30px 0 50px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font: 18px/1.6 var(--body); color: var(--navy); background: var(--white); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid #ffd34d; outline-offset: 3px; border-radius: 6px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  /* Hero: the whole band is Vetus blue */
+  .hero { background: var(--blue); color: var(--white); position: relative; overflow: hidden; }
+  .hero::after { /* the logo's chevrons, very large and faint */
+    content: ""; position: absolute; right: -120px; bottom: -160px; width: 620px; height: 480px;
+    background: url(/img/mark-white.png) center / contain no-repeat; opacity: .08; pointer-events: none;
+  }
+  nav { display: flex; align-items: center; gap: 28px; padding: 22px 0; position: relative; z-index: 1; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; font: 800 26px/1 var(--display); letter-spacing: -0.5px; }
+  .brand img { width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255,255,255,.35); }
+  nav .links { margin-left: auto; display: flex; gap: 26px; }
+  nav .links a { text-decoration: none; font-size: 16px; opacity: .9; }
+  nav .links a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+  @media (max-width: 720px) { nav .links { display: none; } }
+
+  .hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 56px; align-items: center; padding: 40px 0 88px; position: relative; z-index: 1; }
+  @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; padding-bottom: 64px; } }
+  h1 { font: 800 clamp(44px, 6.4vw, 78px)/0.98 var(--display); letter-spacing: -2.2px; margin: 0 0 24px; }
+  .lede { font-size: 21px; line-height: 1.55; max-width: 34ch; margin: 0 0 34px; color: rgba(255,255,255,.92); }
+  .cta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 16px 24px; border-radius: 14px; font: 700 17px/1 var(--body); text-decoration: none; border: 2px solid transparent; cursor: pointer; transition: transform .15s ease, background .15s ease; }
+  .btn:active { transform: translateY(1px); }
+  .btn-white { background: var(--white); color: var(--blue-deep); }
+  .btn-white:hover { background: var(--mist); }
+  .btn-ghost { color: var(--white); border-color: rgba(255,255,255,.6); }
+  .btn-ghost:hover { background: rgba(255,255,255,.12); }
+  .btn svg { width: 20px; height: 20px; }
+
+  /* The signature: a real Vetus chat, a scam arrives and gets stopped */
+  .chat { background: var(--white); color: var(--navy); border-radius: 30px; padding: 18px 18px 22px; box-shadow: 0 30px 60px -20px rgba(18,26,71,.45); max-width: 420px; justify-self: end; width: 100%; }
+  @media (max-width: 900px) { .chat { justify-self: start; } }
+  .chat-head { display: flex; align-items: center; gap: 10px; padding: 4px 6px 14px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+  .chat-head img { width: 34px; height: 34px; border-radius: 50%; }
+  .chat-head b { font-size: 16px; display: block; line-height: 1.2; }
+  .chat-head span { font-size: 13px; color: var(--muted); }
+  .bubble { max-width: 88%; padding: 12px 15px; border-radius: 18px; font-size: 16px; line-height: 1.45; margin-bottom: 10px; }
+  .bubble.from-me { margin-left: auto; background: var(--mist); border-bottom-right-radius: 6px; }
+  .bubble.from-me small { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+  .bubble.vetus { background: var(--blocked-bg); border-bottom-left-radius: 6px; }
+  .bubble.vetus .head { font-weight: 700; color: var(--blocked); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .bubble.vetus .head i { width: 10px; height: 10px; border-radius: 50%; background: var(--blocked); display: inline-block; }
+  .bubble.alert { background: var(--white); border: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  .bubble.alert b { color: var(--navy); }
+  @media (prefers-reduced-motion: no-preference) {
+    .chat .bubble { opacity: 0; transform: translateY(8px); animation: arrive .45s ease forwards; }
+    .chat .bubble:nth-child(2) { animation-delay: .25s; }
+    .chat .bubble:nth-child(3) { animation-delay: 1.1s; }
+    .chat .bubble:nth-child(4) { animation-delay: 1.9s; }
+    @keyframes arrive { to { opacity: 1; transform: none; } }
+  }
+
+  section { padding: 88px 0; }
+  h2 { font: 800 clamp(32px, 4vw, 44px)/1.08 var(--display); letter-spacing: -1px; margin: 0 0 14px; }
+  .section-lede { color: var(--muted); max-width: 56ch; margin: 0 0 36px; font-size: 19px; }
+
+  /* Try it */
+  .try-box { border: 2px solid var(--line); border-radius: 22px; padding: 22px; background: var(--white); }
+  .try-box:focus-within { border-color: var(--blue); }
+  textarea { width: 100%; min-height: 130px; border: 0; resize: vertical; font: 19px/1.55 var(--body); color: var(--navy); background: transparent; outline: none; }
+  textarea::placeholder { color: #8a92bd; }
+  .try-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 8px; }
+  .btn-blue { background: var(--blue); color: var(--white); }
+  .btn-blue:hover { background: var(--blue-deep); }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+  .examples span { color: var(--muted); font-size: 15px; align-self: center; margin-right: 2px; }
+  .chip { font: 500 15px/1 var(--body); padding: 10px 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--mist); color: var(--navy); cursor: pointer; }
+  .chip:hover { border-color: var(--blue); }
+  .result { margin-top: 20px; border-radius: 22px; padding: 22px 24px; display: none; }
+  .result.show { display: block; }
+  .result.APPROVE { background: var(--safe-bg); } .result.HOLD { background: var(--held-bg); } .result.BLOCK { background: var(--blocked-bg); } .result.pending { background: var(--mist); }
+  .result .verdict { font: 800 26px/1.1 var(--display); margin: 0 0 6px; }
+  .result.APPROVE .verdict { color: var(--safe); } .result.HOLD .verdict { color: var(--held); } .result.BLOCK .verdict { color: var(--blocked); } .result.pending .verdict { color: var(--blue-deep); }
+  .result .meta { color: var(--muted); font-size: 15px; margin-bottom: 12px; }
+  .result .said { font-size: 19px; margin: 0 0 14px; }
+  .flags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .flag { font-size: 14px; padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,.75); }
+  .steps-list { margin: 0; padding-left: 22px; font-size: 16px; }
+  .steps-list li { margin: 3px 0; }
+
+  /* How it works: a real sequence, so it is numbered */
+  .how { background: var(--mist); }
+  .how ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; counter-reset: s; }
+  @media (max-width: 860px) { .how ol { grid-template-columns: 1fr; } }
+  .how li { counter-increment: s; position: relative; padding-top: 64px; }
+  .how li::before { content: counter(s); position: absolute; top: 0; left: 0; width: 46px; height: 46px; border-radius: 50%; background: var(--blue); color: var(--white); font: 800 22px/46px var(--display); text-align: center; }
+  .how h3 { font: 800 24px/1.15 var(--display); margin: 0 0 8px; }
+  .how p { margin: 0; color: var(--muted); }
+  .how code { font-size: 15px; background: var(--white); padding: 2px 6px; border-radius: 6px; }
+
+  /* Three checks */
+  .checks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+  @media (max-width: 860px) { .checks-grid { grid-template-columns: 1fr; gap: 24px; } }
+  .pipeline { list-style: none; margin: 0; padding: 0; }
+  .pipeline li { display: grid; grid-template-columns: 54px 1fr; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .pipeline li:last-child { border-bottom: 0; }
+  .pipeline .ic { width: 54px; height: 54px; border-radius: 16px; background: var(--mist); display: grid; place-items: center; }
+  .pipeline .ic svg { width: 26px; height: 26px; stroke: var(--blue); }
+  .pipeline h3 { margin: 0 0 4px; font: 800 22px/1.2 var(--display); }
+  .pipeline p { margin: 0; color: var(--muted); }
+  .promise { background: var(--navy); color: var(--white); border-radius: 26px; padding: 34px; }
+  .promise p { font: 600 26px/1.3 var(--display); margin: 0 0 18px; letter-spacing: -.3px; }
+  .promise small { color: #b9c2f0; font-size: 16px; line-height: 1.5; display: block; }
+  .outcomes { display: grid; gap: 10px; margin-top: 24px; }
+  .outcome { display: flex; gap: 12px; align-items: center; font-size: 16px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+
+  /* For AI agents */
+  .agents { background: var(--navy); color: var(--white); }
+  .agents .section-lede { color: #c3cbf4; }
+  pre { background: #0b1033; color: #e4e9ff; border: 1px solid #27306a; padding: 22px; border-radius: 18px; overflow-x: auto; font: 15px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 0; }
+  pre .c { color: #8f9be0; }
+
+  footer { background: var(--navy); color: #aab3e6; border-top: 1px solid #27306a; padding: 28px 0 40px; font-size: 15px; }
+  footer .wrap { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  footer img { width: 28px; height: 28px; border-radius: 50%; }
+  footer a { color: var(--white); }
   .busy { opacity: .6; pointer-events: none; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <nav>
-    <span class="logo">Vetus</span>
-    <span class="spacer"></span>
-    <a href="#try">Try it</a>
-    <a href="/demo">Live demo</a>
-    <a href="#agents">For AI agents</a>
-    <a href="https://github.com/MELcodes99/vetus" target="_blank" rel="noopener">GitHub</a>
-  </nav>
 
-  <div class="hero">
-    <h1>Vetus vets every payment before Grandma sends it.</h1>
-    <p>Scammers take billions from older adults every year with fake emergencies, fake refunds and fake bills. Vetus checks every payment and every suspicious message first, blocks the scams, and asks the family when something looks off.</p>
-    <div class="cta">
-      <a class="btn primary" id="tg" href="#try">Protect a family member on Telegram</a>
-      <a class="btn" href="/demo">See the live demo</a>
+<header class="hero">
+  <div class="wrap">
+    <nav aria-label="Main">
+      <a class="brand" href="/"><img src="/img/logo-64.png" alt="" />Vetus</a>
+      <div class="links">
+        <a href="#try">Check a message</a>
+        <a href="#how">How it works</a>
+        <a href="/demo">Live demo</a>
+        <a href="#agents">For AI agents</a>
+      </div>
+    </nav>
+
+    <div class="hero-grid">
+      <div>
+        <h1>Vetus vets every payment before grandparents send it.</h1>
+        <p class="lede">Fake emergencies, fake refunds, fake bills. Vetus checks every payment and every suspicious message first, stops the scams, and asks the family when something looks off.</p>
+        <div class="cta">
+          <a class="btn btn-white" id="tg" href="#try">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.8 19c-.2 1-.9 1.3-1.7.8l-4.7-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.8 8.8-7.9c.4-.3-.1-.5-.6-.2L6.7 13 2 11.6c-1-.3-1-1 .2-1.5L20.6 3c.9-.3 1.6.2 1.3 1.3Z"/></svg>
+            Protect a parent on Telegram
+          </a>
+          <a class="btn btn-ghost" href="#try">Check a message now</a>
+        </div>
+      </div>
+
+      <div class="chat" aria-label="Example: Vetus stopping a scam">
+        <div class="chat-head"><img src="/img/logo-64.png" alt="" /><div><b>Vetus</b><span>Grandma Rose's chat</span></div></div>
+        <div class="bubble from-me"><small>Forwarded message</small>Grandma it's me, I'm in jail. Please don't tell Mom. Buy $500 in gift cards and send me the codes today.</div>
+        <div class="bubble vetus"><div class="head"><i></i>This is a scam</div>Please don't buy the gift cards. Call Mel on the number you already have before doing anything.</div>
+        <div class="bubble alert"><b>Mel was alerted:</b> grandparent emergency scam stopped, no money sent.</div>
+      </div>
     </div>
   </div>
+</header>
 
-  <section>
-    <h2>How families use it</h2>
-    <div class="steps">
-      <div class="card"><span class="n">01</span><b>You set it up</b><span>Open the Vetus bot, tap "Protect a family member", and send your parent the invite link. Add the people they pay and set limits.</span></div>
-      <div class="card"><span class="n">02</span><b>They forward or pay</b><span>Unsure about a text or a call? They forward it and get a plain answer in seconds. Want to pay someone? Vetus checks it before any money moves.</span></div>
-      <div class="card"><span class="n">03</span><b>You decide the odd ones</b><span>Ordinary bills go through. Scams are blocked. Anything unusual comes to you with Approve and Decline buttons and the full reasoning.</span></div>
-    </div>
-  </section>
-
+<main>
   <section id="try">
-    <h2>Try it on a message</h2>
-    <textarea id="msg" placeholder="Paste a text, email or call script you're not sure about…"></textarea>
-    <div class="try-row">
-      <button id="go">Check it</button>
-      <button class="ex" data-ex="Grandma it's me, I'm in trouble and need bail. Please don't tell Mom. Buy $500 in Google Play gift cards and send me the codes today.">Grandparent scam</button>
-      <button class="ex" data-ex="Hi Rose, your monthly prescription is ready for pickup at Maple Street Pharmacy. Reply STOP to opt out.">Pharmacy text</button>
-      <button class="ex" data-ex="FINAL NOTICE: Your power will be disconnected in 30 minutes for an unpaid balance. Pay now with a Bitcoin ATM to avoid shutoff. Call 555-0199.">Utility threat</button>
+    <div class="wrap">
+      <h2>Not sure about a message?</h2>
+      <p class="section-lede">Paste a text, email or what a caller said. Vetus tells you whether it's safe and what to do next, in plain words.</p>
+      <div class="try-box">
+        <label for="msg" class="sr-only">Message to check</label>
+        <textarea id="msg" placeholder="Paste the message here…"></textarea>
+        <div class="try-actions">
+          <button class="btn btn-blue" id="go">Check this message</button>
+          <div class="examples">
+            <span>Or try</span>
+            <button class="chip" data-ex="Grandma it's me, I'm in trouble and need bail. Please don't tell Mom. Buy $500 in Google Play gift cards and send me the codes today.">A grandchild in trouble</button>
+            <button class="chip" data-ex="FINAL NOTICE: Your power will be disconnected in 30 minutes for an unpaid balance. Pay now at a Bitcoin ATM to avoid shutoff. Call 555-0199.">A power cut threat</button>
+            <button class="chip" data-ex="Hi Rose, your monthly prescription is ready for pickup at Maple Street Pharmacy. Reply STOP to opt out.">A pharmacy text</button>
+          </div>
+        </div>
+      </div>
+      <div class="result" id="result" aria-live="polite"></div>
     </div>
-    <div class="result card" id="result"></div>
   </section>
 
-  <section>
-    <h2>Three layers, strictest wins</h2>
-    <div class="layers">
-      <div class="layer"><b>Family rules</b><span>Trusted payees, per-payment and daily limits, and instant blocks for scam payment methods like gift cards and crypto ATMs.</span></div>
-      <div class="layer"><b>SERV Reasoning</b><span>Checks WHO, WHY, HOW, PRESSURE and FIT against known scam patterns, with a step-by-step trace the family can read. Scam text that tries to instruct the AI is flagged, not followed.</span></div>
-      <div class="layer"><b>Kite Agent Passport</b><span>Approved payments settle in USDC through Kite, which enforces the spending allowance on chain. Vetus checks the merchant's price before paying.</span></div>
+  <section class="how" id="how">
+    <div class="wrap">
+      <h2>Set up in two minutes</h2>
+      <p class="section-lede">Everything happens in Telegram. Nobody has to install a new app or learn anything about crypto.</p>
+      <ol>
+        <li><h3>You set it up</h3><p>Open the Vetus bot, tap <em>Protect a family member</em>, and send your parent their invite link. Add the people they pay and choose limits.</p></li>
+        <li><h3>They forward or pay</h3><p>Unsure about a text or a call? They forward it and get an answer in seconds. Paying someone? They tap <code>/pay</code> and Vetus checks it first.</p></li>
+        <li><h3>You decide the unusual ones</h3><p>Everyday bills go through. Scams are stopped. Anything unusual comes to you with Approve and Decline buttons and the reasons behind it.</p></li>
+      </ol>
     </div>
-    <p style="color:var(--muted)">The AI can make a decision stricter, never softer. If the reasoning layer is down, Vetus holds the payment for a person.</p>
   </section>
 
-  <section id="agents">
-    <h2>For AI agents</h2>
-    <p>People are starting to let AI assistants shop and pay for them, and those agents can be scammed too. Before your agent spends, ask Vetus:</p>
-    <pre id="curl">curl -X POST https://YOUR-VETUS-URL/api/vet \
+  <section id="checks">
+    <div class="wrap checks-grid">
+      <div>
+        <h2>Three checks before money moves</h2>
+        <ul class="pipeline">
+          <li><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></div>
+            <div><h3>Your family's rules</h3><p>Trusted payees, a limit per payment and per day, and an instant stop on payment methods scammers love, like gift cards and crypto ATMs.</p></div></li>
+          <li><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"/></svg></div>
+            <div><h3>A careful second look</h3><p>SERV Reasoning checks who is asking, why, how they want to be paid, whether there's pressure, and whether it fits. Scam text that tries to instruct the AI gets flagged, not followed.</p></div></li>
+          <li><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div><h3>A locked wallet</h3><p>Approved payments are sent in digital dollars (USDC) through Kite Agent Passport, which caps spending no matter what.</p></div></li>
+        </ul>
+      </div>
+      <div class="promise">
+        <p>The AI can make a decision stricter, never softer.</p>
+        <small>If the AI is unsure or unavailable, the payment waits for a person. Your rules always win.</small>
+        <div class="outcomes">
+          <div class="outcome"><span class="dot" style="background:#3ccf91"></span>Paid: an everyday bill to someone you trust</div>
+          <div class="outcome"><span class="dot" style="background:#ffbe3d"></span>Held for family: unusual, so you decide</div>
+          <div class="outcome"><span class="dot" style="background:#ff6b6b"></span>Blocked: a scam, and nothing leaves the wallet</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="agents" id="agents">
+    <div class="wrap">
+      <h2>For AI agents</h2>
+      <p class="section-lede">More people now let AI assistants shop and pay for them, and those assistants can be scammed too. Before your agent spends money, ask Vetus.</p>
+<pre id="curl">curl -X POST https://YOUR-VETUS-URL/api/vet \
   -H "Content-Type: application/json" \
   -d '{"payee":"Microsoft Refund Desk","amount":2.5,
        "memo":"Processing fee for refund",
        "context":"Your PC is infected. Pay the fee to get your $899 refund."}'
 
-# → {"verdict":"BLOCK","pay":false,"reasoning":{"risk":96,"scamPattern":"tech support refund", ...}}</pre>
+<span class="c"># {"verdict":"BLOCK","pay":false,"reasoning":{"risk":96,"scamPattern":"tech support refund", ...}}</span></pre>
+    </div>
   </section>
+</main>
 
-  <footer>Built by Jedi Labs for the OpenServ SERV Hackathon, Edition 02 (Kite track). Vetus is a safety net, not a guarantee. Always confirm unusual requests with family.</footer>
-</div>
+<footer>
+  <div class="wrap">
+    <img src="/img/logo-64.png" alt="" />
+    <span>Vetus by Jedi Labs. Built on SERV Reasoning and Kite Agent Passport. A safety net, not a guarantee: always confirm unusual requests with family.</span>
+    <a href="https://github.com/MELcodes99/vetus" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</footer>
 
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-$("#curl").textContent = $("#curl").textContent.replace("https://YOUR-VETUS-URL", location.origin);
+const curl = $("#curl");
+curl.innerHTML = curl.innerHTML.replace("https://YOUR-VETUS-URL", location.origin);
 
 fetch("/api/info").then((r) => r.json()).then((i) => { if (i.bot) $("#tg").href = `https://t.me/${i.bot}`; }).catch(() => {});
 
-document.querySelectorAll(".ex").forEach((b) => b.addEventListener("click", () => { $("#msg").value = b.dataset.ex; check(); }));
+document.querySelectorAll(".chip").forEach((b) => b.addEventListener("click", () => { $("#msg").value = b.dataset.ex; check(); }));
 $("#go").addEventListener("click", check);
+$("#msg").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) check(); });
+
+const HEAD = { APPROVE: "This looks safe", HOLD: "Be careful with this one", BLOCK: "This is a scam" };
 
 async function check() {
   const text = $("#msg").value.trim();
-  if (!text) return;
   const box = $("#result");
-  box.style.display = "block";
-  box.innerHTML = "Checking…";
-  $("#try").classList.add("busy");
+  if (!text) { $("#msg").focus(); return; }
+  box.className = "result show pending";
+  box.innerHTML = `<p class="verdict">Checking…</p><div class="meta">This takes a few seconds.</div>`;
+  $(".try-box").classList.add("busy");
   try {
     const res = await fetch("/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
     const c = await res.json();
-    if (!res.ok) throw new Error(c.error);
+    if (!res.ok) throw new Error(c.error || "Something went wrong");
     const r = c.reasoning || {};
-    const head = { APPROVE: "Looks safe", HOLD: "Be careful", BLOCK: "Scam" }[c.verdict];
-    box.innerHTML = `<div><span class="verdict ${c.verdict}">${head.toUpperCase()}${r.risk != null ? ` · risk ${r.risk}` : ""}</span>
-      ${r.scamPattern ? ` <b>${esc(r.scamPattern)}</b>` : ""}</div>
-      <p><b>What Vetus would tell Grandma:</b> ${esc(c.elderMessage)}</p>
+    box.className = `result show ${c.verdict}`;
+    box.innerHTML = `<p class="verdict">${HEAD[c.verdict]}</p>
+      <div class="meta">${[r.scamPattern, r.risk != null ? `risk ${r.risk} out of 100` : ""].filter(Boolean).map(esc).join(", ")}</div>
+      <p class="said">${esc(c.elderMessage)}</p>
       ${(r.redFlags || []).length ? `<div class="flags">${r.redFlags.map((f) => `<span class="flag">${esc(f)}</span>`).join("")}</div>` : ""}
-      ${(r.steps || []).length ? `<ol>${r.steps.map((s) => `<li><b>${esc(s.check)}</b> · ${esc(s.finding)}</li>`).join("")}</ol>` : ""}`;
+      ${(r.steps || []).length ? `<ol class="steps-list">${r.steps.map((s) => `<li><b>${esc(s.check)}</b> ${esc(s.finding)}</li>`).join("")}</ol>` : ""}`;
   } catch (e) {
-    box.innerHTML = `Couldn't check right now: ${esc(e.message)}`;
+    box.className = "result show HOLD";
+    box.innerHTML = `<p class="verdict">Couldn't check right now</p><p class="said">${esc(e.message)}. Until you can check it, don't pay or reply, and ask your family.</p>`;
   } finally {
-    $("#try").classList.remove("busy");
+    $(".try-box").classList.remove("busy");
   }
 }
 </script>

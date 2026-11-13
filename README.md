@@ -1,8 +1,10 @@
 # Vetus
 
-**Vetus vets every payment before Grandma sends it.**
+**Vetus vets every payment before grandparents send it.**
 
 Older adults lose billions every year to payment scams: the "grandson in jail" call, the fake tech-support refund, the "your power will be cut off" threat. Banks catch some of it after the money is gone. Vetus stops it before it leaves the wallet, and as people start letting AI assistants pay for them, it protects those agents too.
+
+![Vetus](public/img/logo-192.png)
 
 Vetus is a scam-blocking payment guardian that families set up for an older relative on Telegram. It is built on **SERV Reasoning** (OpenServ) and **Kite Agent Passport**.
 

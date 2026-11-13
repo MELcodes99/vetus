@@ -1,7 +1,7 @@
 {
   "name": "vetus",
   "version": "0.1.0",
-  "description": "Vetus vets every payment before Grandma sends it. SERV Reasoning + Kite Agent Passport.",
+  "description": "Vetus vets every payment before grandparents send it. SERV Reasoning + Kite Agent Passport.",
   "type": "module",
   "main": "src/server.js",
   "scripts": {

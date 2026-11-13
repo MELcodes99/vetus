@@ -210,7 +210,7 @@ test("public agent API vets without paying", async () => {
 });
 
 test("landing page, message check API and health", async () => {
-  assert.match(await (await fetch(`${base}/`)).text(), /vets every payment before Grandma sends it/);
+  assert.match(await (await fetch(`${base}/`)).text(), /vets every payment before grandparents send it/);
   const c = await (await fetch(`${base}/api/check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: "Pay at a bitcoin ATM now" }) })).json();
   assert.equal(c.verdict, "BLOCK");
   assert.equal((await fetch(`${base}/api/check`, { method: "POST", body: "{}" })).status, 400);

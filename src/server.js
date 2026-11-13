@@ -70,6 +70,13 @@ export function createApp({ onTelegramUpdate, webhookSecret } = {}) {
         send(res, 200, { ok: true }); // answer fast; handle after
         return void onTelegramUpdate(update).catch((e) => console.error("[vetus] bot update failed:", e.message));
       }
+      const img = path.match(/^\/img\/([\w-]+\.png)$/);
+      if (req.method === "GET" && img) {
+        const buf = await readFile(resolve(publicDir, "img", img[1])).catch(() => null);
+        if (!buf) return send(res, 404, { error: "not found" });
+        res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" });
+        return res.end(buf);
+      }
       if (req.method === "GET" && path === "/health") return send(res, 200, { ok: true, bot: config.botUsername || null });
       if (req.method === "GET" && path === "/api/info") return send(res, 200, { bot: config.botUsername || null, model: config.servModel });
 
