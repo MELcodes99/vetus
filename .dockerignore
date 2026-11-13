@@ -1,0 +1,6 @@
+.env
+data/
+.kite-passport/
+node_modules/
+test/
+.git/

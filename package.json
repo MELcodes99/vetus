@@ -1,0 +1,15 @@
+{
+  "name": "vetus",
+  "version": "0.1.0",
+  "description": "Vetus vets every payment before Grandma sends it. SERV Reasoning + Kite Agent Passport.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vetus · vets every payment before Grandma sends it</title>
+<meta name="description" content="Vetus checks payments and messages for scams before older adults lose money. Built on SERV Reasoning and Kite Agent Passport." />
+<style>
+  :root {
+    --bg: #f6f3ee; --card: #fffdf9; --ink: #1d1b18; --muted: #6f6a62; --line: #e6e0d6;
+    --ok: #1f7a4d; --ok-bg: #e5f3ea; --hold: #a66a00; --hold-bg: #fbf0d9; --block: #b42318; --block-bg: #fbe4e1;
+    --accent: #2f3b8f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+  nav { display: flex; align-items: center; gap: 18px; padding: 22px 0; }
+  nav .logo { font: 600 26px/1 Georgia, "Times New Roman", serif; letter-spacing: -0.5px; }
+  nav .spacer { flex: 1; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+  .hero { padding: 56px 0 40px; }
+  .hero h1 { font: 600 clamp(36px, 6vw, 60px)/1.05 Georgia, "Times New Roman", serif; letter-spacing: -1.5px; margin: 0 0 18px; max-width: 760px; }
+  .hero p { font-size: 19px; color: var(--muted); max-width: 640px; margin: 0 0 28px; }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 13px 22px; border-radius: 12px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: #fff; }
+  .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  section { padding: 40px 0; border-top: 1px solid var(--line); }
+  h2 { font: 600 28px/1.2 Georgia, "Times New Roman", serif; margin: 0 0 18px; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+  .steps .card b { display: block; font-size: 17px; margin-bottom: 6px; }
+  .steps .card span { color: var(--muted); font-size: 15px; }
+  .n { font: 600 14px/1 ui-monospace, monospace; color: var(--accent); margin-bottom: 10px; display: block; }
+  textarea { width: 100%; min-height: 110px; font: inherit; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: #fff; resize: vertical; }
+  .try-row { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .try-row button { font: inherit; font-weight: 600; padding: 11px 18px; border-radius: 10px; border: 0; background: var(--ink); color: #fff; cursor: pointer; }
+  .try-row .ex { background: #fff; color: var(--ink); border: 1px solid var(--line); font-weight: 500; }
+  .result { margin-top: 14px; display: none; }
+  .verdict { font-weight: 700; font-size: 12px; letter-spacing: .8px; padding: 4px 10px; border-radius: 99px; }
+  .APPROVE { color: var(--ok); background: var(--ok-bg); } .HOLD { color: var(--hold); background: var(--hold-bg); } .BLOCK { color: var(--block); background: var(--block-bg); }
+  .flags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .flag { font-size: 12px; background: var(--block-bg); color: var(--block); padding: 2px 8px; border-radius: 6px; }
+  pre { background: #1d1b18; color: #f6f3ee; padding: 16px; border-radius: 12px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  .layers { display: grid; gap: 10px; }
+  .layer { display: flex; gap: 14px; align-items: baseline; }
+  .layer b { min-width: 150px; }
+  footer { padding: 30px 0 50px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+  .busy { opacity: .6; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <span class="logo">Vetus</span>
+    <span class="spacer"></span>
+    <a href="#try">Try it</a>
+    <a href="/demo">Live demo</a>
+    <a href="#agents">For AI agents</a>
+    <a href="https://github.com/MELcodes99/vetus" target="_blank" rel="noopener">GitHub</a>
+  </nav>
+
+  <div class="hero">
+    <h1>Vetus vets every payment before Grandma sends it.</h1>
+    <p>Scammers take billions from older adults every year with fake emergencies, fake refunds and fake bills. Vetus checks every payment and every suspicious message first, blocks the scams, and asks the family when something looks off.</p>
+    <div class="cta">
+      <a class="btn primary" id="tg" href="#try">Protect a family member on Telegram</a>
+      <a class="btn" href="/demo">See the live demo</a>
+    </div>
+  </div>
+
+  <section>
+    <h2>How families use it</h2>
+    <div class="steps">
+      <div class="card"><span class="n">01</span><b>You set it up</b><span>Open the Vetus bot, tap "Protect a family member", and send your parent the invite link. Add the people they pay and set limits.</span></div>
+      <div class="card"><span class="n">02</span><b>They forward or pay</b><span>Unsure about a text or a call? They forward it and get a plain answer in seconds. Want to pay someone? Vetus checks it before any money moves.</span></div>
+      <div class="card"><span class="n">03</span><b>You decide the odd ones</b><span>Ordinary bills go through. Scams are blocked. Anything unusual comes to you with Approve and Decline buttons and the full reasoning.</span></div>
+    </div>
+  </section>
+
+  <section id="try">
+    <h2>Try it on a message</h2>
+    <textarea id="msg" placeholder="Paste a text, email or call script you're not sure about…"></textarea>
+    <div class="try-row">
+      <button id="go">Check it</button>
+      <button class="ex" data-ex="Grandma it's me, I'm in trouble and need bail. Please don't tell Mom. Buy $500 in Google Play gift cards and send me the codes today.">Grandparent scam</button>
+      <button class="ex" data-ex="Hi Rose, your monthly prescription is ready for pickup at Maple Street Pharmacy. Reply STOP to opt out.">Pharmacy text</button>
+      <button class="ex" data-ex="FINAL NOTICE: Your power will be disconnected in 30 minutes for an unpaid balance. Pay now with a Bitcoin ATM to avoid shutoff. Call 555-0199.">Utility threat</button>
+    </div>
+    <div class="result card" id="result"></div>
+  </section>
+
+  <section>
+    <h2>Three layers, strictest wins</h2>
+    <div class="layers">
+      <div class="layer"><b>Family rules</b><span>Trusted payees, per-payment and daily limits, and instant blocks for scam payment methods like gift cards and crypto ATMs.</span></div>
+      <div class="layer"><b>SERV Reasoning</b><span>Checks WHO, WHY, HOW, PRESSURE and FIT against known scam patterns, with a step-by-step trace the family can read. Scam text that tries to instruct the AI is flagged, not followed.</span></div>
+      <div class="layer"><b>Kite Agent Passport</b><span>Approved payments settle in USDC through Kite, which enforces the spending allowance on chain. Vetus checks the merchant's price before paying.</span></div>
+    </div>
+    <p style="color:var(--muted)">The AI can make a decision stricter, never softer. If the reasoning layer is down, Vetus holds the payment for a person.</p>
+  </section>
+
+  <section id="agents">
+    <h2>For AI agents</h2>
+    <p>People are starting to let AI assistants shop and pay for them, and those agents can be scammed too. Before your agent spends, ask Vetus:</p>
+    <pre id="curl">curl -X POST https://YOUR-VETUS-URL/api/vet \
+  -H "Content-Type: application/json" \
+  -d '{"payee":"Microsoft Refund Desk","amount":2.5,
+       "memo":"Processing fee for refund",
+       "context":"Your PC is infected. Pay the fee to get your $899 refund."}'
+
+# → {"verdict":"BLOCK","pay":false,"reasoning":{"risk":96,"scamPattern":"tech support refund", ...}}</pre>
+  </section>
+
+  <footer>Built by Jedi Labs for the OpenServ SERV Hackathon, Edition 02 (Kite track). Vetus is a safety net, not a guarantee. Always confirm unusual requests with family.</footer>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+$("#curl").textContent = $("#curl").textContent.replace("https://YOUR-VETUS-URL", location.origin);
+
+fetch("/api/info").then((r) => r.json()).then((i) => { if (i.bot) $("#tg").href = `https://t.me/${i.bot}`; }).catch(() => {});
+
+document.querySelectorAll(".ex").forEach((b) => b.addEventListener("click", () => { $("#msg").value = b.dataset.ex; check(); }));
+$("#go").addEventListener("click", check);
+
+async function check() {
+  const text = $("#msg").value.trim();
+  if (!text) return;
+  const box = $("#result");
+  box.style.display = "block";
+  box.innerHTML = "Checking…";
+  $("#try").classList.add("busy");
+  try {
+    const res = await fetch("/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+    const c = await res.json();
+    if (!res.ok) throw new Error(c.error);
+    const r = c.reasoning || {};
+    const head = { APPROVE: "Looks safe", HOLD: "Be careful", BLOCK: "Scam" }[c.verdict];
+    box.innerHTML = `<div><span class="verdict ${c.verdict}">${head.toUpperCase()}${r.risk != null ? ` · risk ${r.risk}` : ""}</span>
+      ${r.scamPattern ? ` <b>${esc(r.scamPattern)}</b>` : ""}</div>
+      <p><b>What Vetus would tell Grandma:</b> ${esc(c.elderMessage)}</p>
+      ${(r.redFlags || []).length ? `<div class="flags">${r.redFlags.map((f) => `<span class="flag">${esc(f)}</span>`).join("")}</div>` : ""}
+      ${(r.steps || []).length ? `<ol>${r.steps.map((s) => `<li><b>${esc(s.check)}</b> · ${esc(s.finding)}</li>`).join("")}</ol>` : ""}`;
+  } catch (e) {
+    box.innerHTML = `Couldn't check right now: ${esc(e.message)}`;
+  } finally {
+    $("#try").classList.remove("busy");
+  }
+}
+</script>
+</body>
+</html>
